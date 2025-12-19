@@ -8,6 +8,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
+const serverless = require("serverless-http");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -270,3 +271,6 @@ process.on('uncaughtException', (error) => {
     console.error('Uncaught Exception:', error);
     process.exit(1);
 });
+
+
+module.exports = serverless(app);
