@@ -92,10 +92,10 @@ Student's message: ${userMessage}`;
 }
 
 // ========================================
-// OPENAI API CALL
+// OPENAI API CALL WITH TIMEOUT
 // ========================================
-// Call OpenAI-compatible chat API
-async function callOpenAI(prompt) {
+// Call OpenAI-compatible chat API with timeout
+async function callOpenAI(prompt, mode) {
     const apiKey = process.env.OPENAI_API_KEY;
     
     // Check if API key is set
@@ -105,6 +105,10 @@ async function callOpenAI(prompt) {
     
     const apiUrl = process.env.OPENAI_API_URL || 'https://api.openai.com/v1/chat/completions';
     
+    // Create abort controller for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+    
     try {
         const response = await fetch(apiUrl, {
             method: 'POST',
@@ -113,7 +117,7 @@ async function callOpenAI(prompt) {
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: process.env.OPENAI_MODEL || 'gpt-4.1-mini',
+                model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
                 messages: [
                     {
                         role: 'system',
@@ -125,9 +129,12 @@ async function callOpenAI(prompt) {
                     }
                 ],
                 temperature: 0.7,
-                max_tokens: 500
-            })
+                max_tokens: 300
+            }),
+            signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
         
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
@@ -144,13 +151,11 @@ async function callOpenAI(prompt) {
         }
         
     } catch (error) {
-        console.error('Error calling OpenAI:', error);
+        clearTimeout(timeoutId);
+        console.error('Error calling OpenAI:', error.message);
         
-        // FALLBACK: If OpenAI fails, use Demo Mode
-        console.log('⚠️ Switching to Demo Mode due to API error');
-        const demoReply = getDemoResponse(mode, message);
-        
-        return demoReply;
+        // If timeout or API error, throw to trigger fallback
+        throw error;
     }
 }
 
@@ -216,12 +221,12 @@ app.post('/api/chat', async (req, res) => {
             // Only attempt OpenAI if key is present
             if (process.env.OPENAI_API_KEY && !process.env.OPENAI_API_KEY.includes('your-api-key')) {
                 const fullPrompt = buildPrompt(message, mode);
-                aiReply = await callOpenAI(fullPrompt);
+                aiReply = await callOpenAI(fullPrompt, mode);
             } else {
                 throw new Error('No valid API key configured');
             }
         } catch (error) {
-            console.log('⚠️ Using Demo Mode fallback');
+            console.log('⚠️ Using Demo Mode fallback:', error.message);
             aiReply = getDemoResponse(mode, message);
         }
         
