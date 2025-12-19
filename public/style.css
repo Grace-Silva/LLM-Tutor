@@ -339,3 +339,33 @@ body {
     .message-content { max-width: 90%; }
     .send-btn { padding: 12px 16px; }
 }
+
+/* Quiz Options */
+.quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.quiz-option-btn {
+    text-align: left;
+    padding: 10px 14px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+    color: #333;
+    width: 100%;
+}
+
+.quiz-option-btn:hover {
+    background: #f0f0f0;
+    border-color: #bbb;
+}
+
+.quiz-option-btn:active {
+    background: #e0e0e0;
+}

@@ -9,6 +9,7 @@
 // ========================================
 let currentMode = null; // Current learning mode: 'explain', 'quiz', or 'simplify'
 let isProcessing = false; // Prevent multiple simultaneous requests
+let chatHistory = []; // Store conversation history
 
 // ========================================
 // DOM ELEMENTS
@@ -29,6 +30,7 @@ const simplifyBtn = document.getElementById('simplifyBtn');
 // Set the current learning mode
 function setMode(mode) {
     currentMode = mode;
+    chatHistory = []; // Reset history when mode changes
     
     // Update UI to show selected mode
     updateModeDisplay(mode);
@@ -77,6 +79,9 @@ function handleModeSelection(mode) {
     // Display user's automatic message
     displayMessage(userMessage, 'user');
     
+    // Add to history
+    chatHistory.push({ role: 'user', content: userMessage });
+    
     // Send to backend
     sendToBackend(userMessage, mode);
 }
@@ -109,7 +114,13 @@ function displayMessage(text, type) {
     // Convert **text** to <strong>text</strong>
     const formattedText = escapedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     
-    paragraph.innerHTML = formattedText;
+    // Format quiz options if applicable
+    let finalHtml = formattedText;
+    if (type === 'ai' && currentMode === 'quiz') {
+        finalHtml = formatQuizOptions(finalHtml);
+    }
+    
+    paragraph.innerHTML = finalHtml;
     
     content.appendChild(paragraph);
     messageDiv.appendChild(avatar);
@@ -120,6 +131,39 @@ function displayMessage(text, type) {
     // Auto-scroll to bottom
     chatContainer.scrollTop = chatContainer.scrollHeight;
 }
+
+// Format quiz options into clickable buttons
+function formatQuizOptions(text) {
+    // Look for patterns like "A) Option text" or "A. Option text"
+    // We look for A, B, C, D followed by ) or . at the start of a line (or after newline)
+    const optionRegex = /(?:^|\n)([A-D])[\)\.]\s+(.*?)(?=\n|$)/g;
+    const matches = [...text.matchAll(optionRegex)];
+    
+    if (matches.length >= 2) {
+        let optionsHtml = '<div class="quiz-options">';
+        matches.forEach(match => {
+            const letter = match[1];
+            const content = match[2];
+            optionsHtml += `<button class="quiz-option-btn" onclick="window.sendOption('${letter}')">${letter}) ${content}</button>`;
+        });
+        optionsHtml += '</div>';
+        
+        // Remove the original text options to avoid duplication
+        // We replace them with an empty string, then clean up extra newlines
+        let cleanText = text.replace(optionRegex, '');
+        return cleanText.trim() + optionsHtml;
+    }
+    return text;
+}
+
+// Handle option click
+window.sendOption = function(option) {
+    const userInput = document.getElementById('userInput');
+    if (userInput.disabled) return;
+    
+    userInput.value = option;
+    handleSend();
+};
 
 // Display loading indicator while waiting for AI response
 function displayLoading() {
@@ -187,7 +231,8 @@ async function sendToBackend(userMessage, mode) {
             },
             body: JSON.stringify({
                 message: userMessage,
-                mode: mode
+                mode: mode,
+                history: chatHistory // Send conversation history
             })
         });
         
@@ -205,6 +250,8 @@ async function sendToBackend(userMessage, mode) {
         // Display AI response
         if (data.reply) {
             displayMessage(data.reply, 'ai');
+            // Add AI response to history
+            chatHistory.push({ role: 'assistant', content: data.reply });
         } else {
             displayError('Received an unexpected response format from the server.');
         }
@@ -259,6 +306,9 @@ function handleSend() {
     
     // Display user message
     displayMessage(message, 'user');
+    
+    // Add to history
+    chatHistory.push({ role: 'user', content: message });
     
     // Clear input
     userInput.value = '';

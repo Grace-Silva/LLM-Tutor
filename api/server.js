@@ -97,7 +97,7 @@ Importance:
 function getModeInstruction(mode) {
     const instructions = {
         explain: "Explain the concept clearly with examples using only the notes provided below. Be thorough but concise.",
-        quiz: "Create a quiz from the notes. Ask one question at a time. Do not reveal answers immediately. Wait for the student to respond before moving to the next question.",
+        quiz: "Conduct a multiple-choice quiz based on the notes. \n1. Ask ONE question at a time with 4 options (A, B, C, D).\n2. When the student answers, YOU MUST FIRST confirm if they are 'Correct' or 'Incorrect' and provide a brief explanation.\n3. ONLY AFTER the explanation, ask the NEXT question.\n4. If the student asks for a 'new quiz', 'restart', or 'start over', ignore the previous conversation and start a fresh quiz from Question 1.",
         simplify: "Explain the concept in very simple words like teaching a beginner or child. Use analogies and everyday examples."
     };
     
@@ -105,10 +105,19 @@ function getModeInstruction(mode) {
 }
 
 // Build the complete prompt for the LLM
-function buildPrompt(userMessage, mode) {
+function buildPrompt(userMessage, mode, history = []) {
     const modeInstruction = getModeInstruction(mode);
     
-    // Structure: System context + Notes + Mode instruction + User message
+    // Format history
+    let historyText = "";
+    if (history.length > 0) {
+        historyText = "\nCONVERSATION HISTORY:\n" + history.map(msg => {
+            const role = msg.role === 'user' ? 'Student' : 'Tutor';
+            return `${role}: ${msg.content}`;
+        }).join("\n") + "\n";
+    }
+    
+    // Structure: System context + Notes + Mode instruction + History + User message
     const prompt = `You are a helpful AI tutor. Your role is to teach students based on the provided study notes.
 
 STUDY NOTES:
@@ -118,7 +127,7 @@ INSTRUCTIONS:
 ${modeInstruction}
 
 IMPORTANT: Only use information from the study notes above. Do not add external information.
-
+${historyText}
 Student's message: ${userMessage}`;
 
     return prompt;
@@ -196,16 +205,28 @@ async function callOpenAI(prompt, mode) {
 // DEMO MODE RESPONSES (Fallback)
 // ========================================
 function getDemoResponse(mode, message) {
+    // Specialized logic for Quiz mode to simulate flow
+    if (mode === 'quiz') {
+        const cleanMsg = message.trim().toUpperCase();
+        
+        // Handle restart request
+        if (cleanMsg.includes('NEW QUIZ') || cleanMsg.includes('RESTART') || cleanMsg.includes('START OVER')) {
+            return "Question 1: What gas do plants take in from the atmosphere during photosynthesis?\n\nA) Oxygen\nB) Carbon Dioxide\nC) Nitrogen\nD) Hydrogen";
+        }
+        
+        // If user sends a single letter answer
+        if (/^[A-D]$/.test(cleanMsg)) {
+            return "Correct! (Or if incorrect: The correct answer was B). \n\nExplanation: Plants take in Carbon Dioxide to perform photosynthesis.\n\nNext Question:\nWhere does the light-dependent reaction take place?\n\nA) Stroma\nB) Thylakoid membranes\nC) Roots\nD) Stem";
+        }
+        // Default start question
+        return "Question 1: What gas do plants take in from the atmosphere during photosynthesis?\n\nA) Oxygen\nB) Carbon Dioxide\nC) Nitrogen\nD) Hydrogen";
+    }
+
     const responses = {
         explain: [
             "Photosynthesis is the process by which green plants create their own food using sunlight. \n\nThink of it like a solar-powered kitchen inside the leaf:\n1. **Ingredients**: Water (from roots) + Carbon Dioxide (from air)\n2. **Energy**: Sunlight (captured by chlorophyll)\n3. **Product**: Glucose (sugar for food) + Oxygen (released into air)\n\nThe chemical equation is: 6CO₂ + 6H₂O + Light → C₆H₁₂O₆ + 6O₂",
             "The two main stages are:\n\n1. **Light-Dependent Reactions**: These happen in the thylakoid membranes. They capture sunlight and split water molecules to make energy (ATP/NADPH).\n\n2. **Calvin Cycle**: This happens in the stroma. It uses that energy to turn CO₂ into sugar (glucose).",
             "This process is vital because it produces the oxygen we breathe and forms the base of the food chain for almost all life on Earth."
-        ],
-        quiz: [
-            "Question 1: What gas do plants take in from the atmosphere during photosynthesis?\n\nA) Oxygen\nB) Carbon Dioxide\nC) Nitrogen\n\n(Type your answer)",
-            "Correct! Plants take in Carbon Dioxide (CO₂). \n\nNext Question:\nWhere does the light-dependent reaction take place?\n\nA) Stroma\nB) Thylakoid membranes\nC) Roots",
-            "That's right! It happens in the thylakoid membranes.\n\nLast Question:\nWhat is the main product of photosynthesis that plants use for food?",
         ],
         simplify: [
             "Imagine a plant is like a chef. \n\nIt needs three things to cook:\n1. Sunlight (the fire)\n2. Water (from the rain)\n3. Air (specifically CO₂)\n\nIt mixes them all up in its green leaves and makes sugar! That sugar is its food to help it grow.",
@@ -231,7 +252,7 @@ app.get('/api/health', (req, res) => {
 // Main chat endpoint
 app.post('/api/chat', async (req, res) => {
     try {
-        const { message, mode } = req.body;
+        const { message, mode, history } = req.body;
         
         // Validate request
         if (!message || typeof message !== 'string') {
@@ -253,7 +274,7 @@ app.post('/api/chat', async (req, res) => {
         try {
             // Only attempt OpenAI if key is present
             if (process.env.OPENAI_API_KEY && !process.env.OPENAI_API_KEY.includes('your-api-key')) {
-                const fullPrompt = buildPrompt(message, mode);
+                const fullPrompt = buildPrompt(message, mode, history);
                 aiReply = await callOpenAI(fullPrompt, mode);
             } else {
                 throw new Error('No valid API key configured');
