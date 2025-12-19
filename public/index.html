@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Tutor Demo - AI-Powered Learning</title>
+    <meta name="description" content="AI-powered tutor with multiple learning modes">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1><i class="ri-graduation-cap-fill"></i> AI Tutor Demo</h1>
+            <p class="subtitle">Learn smarter with AI-powered assistance</p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Current Topic Display -->
+            <div class="topic-display">
+                <span class="topic-label">Current Topic:</span>
+                <span class="topic-name" id="currentTopic">Photosynthesis</span>
+            </div>
+
+            <!-- Chat Container -->
+            <div class="chat-container" id="chatContainer">
+                <!-- Welcome message -->
+                <div class="message ai-message">
+                    <div class="message-avatar"><i class="ri-robot-2-line"></i></div>
+                    <div class="message-content">
+                        <p>Hello! I'm your AI tutor. Choose a learning mode below and start asking questions about photosynthesis!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Learning Mode Buttons -->
+            <div class="mode-buttons">
+                <button class="mode-btn" id="explainBtn" data-mode="explain">
+                    <i class="ri-book-open-line"></i> Explain this concept
+                </button>
+                <button class="mode-btn" id="quizBtn" data-mode="quiz">
+                    <i class="ri-questionnaire-line"></i> Quiz me
+                </button>
+                <button class="mode-btn" id="simplifyBtn" data-mode="simplify">
+                    <i class="ri-lightbulb-flash-line"></i> Simplify this
+                </button>
+            </div>
+
+            <!-- Current Mode Display -->
+            <div class="current-mode">
+                <span>Mode: </span>
+                <span id="currentMode">None selected</span>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <input 
+                    type="text" 
+                    id="userInput" 
+                    placeholder="Type your message or click a mode button to start..."
+                    autocomplete="off"
+                >
+                <button id="sendBtn" class="send-btn">Send</button>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Powered by Udayam AI Labs • LLM Tutor Demo</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
