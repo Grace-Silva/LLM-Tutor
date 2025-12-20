@@ -97,7 +97,7 @@ Importance:
 function getModeInstruction(mode) {
     const instructions = {
         explain: "Explain the concept clearly with examples using only the notes provided below. Be thorough but concise.",
-        quiz: "Conduct a multiple-choice quiz based on the notes. \n1. Ask ONE question at a time with 4 options (A, B, C, D).\n2. When the student answers, YOU MUST FIRST confirm if they are 'Correct' or 'Incorrect' and provide a brief explanation.\n3. ONLY AFTER the explanation, ask the NEXT question.\n4. If the student asks for a 'new quiz', 'restart', or 'start over', ignore the previous conversation and start a fresh quiz from Question 1.",
+        quiz: "Conduct a multiple-choice quiz based on the notes. \n1. Ask ONE question at a time with 4 options (A, B, C, D).\n2. Start with a question about a RANDOM concept from the notes (do not always start with the definition).\n3. When the student answers, start with 'Correct!' or 'Incorrect!' followed by a brief explanation.\n4. ONLY AFTER the explanation, ask the NEXT question.\n5. Number your questions (e.g., Question 1, Question 2).\n6. Continue asking questions indefinitely until the student explicitly says 'stop'. Do not end the quiz automatically.\n7. If the student asks for a 'new quiz', 'restart', or 'start over', ignore the previous conversation and start a fresh quiz from Question 1.\n8. If the student says 'end quiz', 'stop', or 'quit', conclude the quiz and say 'Quiz ended. Type \"new quiz\" to start again.'",
         simplify: "Explain the concept in very simple words like teaching a beginner or child. Use analogies and everyday examples."
     };
     
@@ -149,7 +149,7 @@ async function callOpenAI(prompt, mode) {
     
     // Create abort controller for timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // Increased timeout to 15 seconds
     
     try {
         const response = await fetch(apiUrl, {
@@ -171,7 +171,7 @@ async function callOpenAI(prompt, mode) {
                     }
                 ],
                 temperature: 0.7,
-                max_tokens: 300
+                max_tokens: 1000 // Increased token limit
             }),
             signal: controller.signal
         });
@@ -211,15 +211,30 @@ function getDemoResponse(mode, message) {
         
         // Handle restart request
         if (cleanMsg.includes('NEW QUIZ') || cleanMsg.includes('RESTART') || cleanMsg.includes('START OVER')) {
-            return "Question 1: What gas do plants take in from the atmosphere during photosynthesis?\n\nA) Oxygen\nB) Carbon Dioxide\nC) Nitrogen\nD) Hydrogen";
+            const startQuestions = [
+                "Question 1: What gas do plants take in from the atmosphere during photosynthesis?\n\nA) Oxygen\nB) Carbon Dioxide\nC) Nitrogen\nD) Hydrogen",
+                "Question 1: Where does the light-dependent reaction take place?\n\nA) Stroma\nB) Thylakoid membranes\nC) Roots\nD) Stem",
+                "Question 1: What is the primary product of photosynthesis?\n\nA) Glucose\nB) Water\nC) Carbon Dioxide\nD) Nitrogen"
+            ];
+            return startQuestions[Math.floor(Math.random() * startQuestions.length)];
+        }
+
+        // Handle end quiz request
+        if (cleanMsg.includes('END QUIZ') || cleanMsg.includes('STOP') || cleanMsg.includes('QUIT')) {
+            return "Quiz ended. Thanks for practicing! Type 'new quiz' to start again.";
         }
         
         // If user sends a single letter answer
         if (/^[A-D]$/.test(cleanMsg)) {
-            return "Correct! (Or if incorrect: The correct answer was B). \n\nExplanation: Plants take in Carbon Dioxide to perform photosynthesis.\n\nNext Question:\nWhere does the light-dependent reaction take place?\n\nA) Stroma\nB) Thylakoid membranes\nC) Roots\nD) Stem";
+            return "Correct! Plants take in Carbon Dioxide to perform photosynthesis.\n\nNext Question:\nWhere does the light-dependent reaction take place?\n\nA) Stroma\nB) Thylakoid membranes\nC) Roots\nD) Stem";
         }
-        // Default start question
-        return "Question 1: What gas do plants take in from the atmosphere during photosynthesis?\n\nA) Oxygen\nB) Carbon Dioxide\nC) Nitrogen\nD) Hydrogen";
+        // Default start question (Randomized)
+        const startQuestions = [
+            "Question 1: What gas do plants take in from the atmosphere during photosynthesis?\n\nA) Oxygen\nB) Carbon Dioxide\nC) Nitrogen\nD) Hydrogen",
+            "Question 1: Where does the light-dependent reaction take place?\n\nA) Stroma\nB) Thylakoid membranes\nC) Roots\nD) Stem",
+            "Question 1: What is the primary product of photosynthesis?\n\nA) Glucose\nB) Water\nC) Carbon Dioxide\nD) Nitrogen"
+        ];
+        return startQuestions[Math.floor(Math.random() * startQuestions.length)];
     }
 
     const responses = {

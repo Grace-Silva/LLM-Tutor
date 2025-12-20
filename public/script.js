@@ -70,7 +70,7 @@ function handleModeSelection(mode) {
     // Different initial prompts for each mode
     const initialPrompts = {
         'explain': 'Please explain the concept of photosynthesis.',
-        'quiz': 'I\'m ready to be quizzed on photosynthesis.',
+        'quiz': 'I\'m ready to be quizzed on photosynthesis. Please start with a random question.',
         'simplify': 'Please explain photosynthesis in simple terms.'
     };
     
@@ -302,6 +302,14 @@ function handleSend() {
     if (!currentMode) {
         alert('Please select a learning mode first (Explain, Quiz, or Simplify)');
         return;
+    }
+    
+    // Check for quiz restart to ensure fresh context
+    if (currentMode === 'quiz') {
+        const lowerMsg = message.toLowerCase();
+        if (lowerMsg.includes('new quiz') || lowerMsg.includes('restart') || lowerMsg.includes('start over')) {
+            chatHistory = [];
+        }
     }
     
     // Display user message
