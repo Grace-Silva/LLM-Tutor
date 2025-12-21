@@ -96,7 +96,10 @@ function displayMessage(text, type) {
     
     const avatar = document.createElement('div');
     avatar.className = 'message-avatar';
-    avatar.innerHTML = type === 'user' ? '<i class="ri-user-3-line"></i>' : '<i class="ri-robot-2-line"></i>';
+    avatar.innerHTML =
+      type === "user"
+        ? '<img width="100" height="100" src="https://img.icons8.com/3d-fluent/100/user-2.png" alt="user-2"/>'
+        : '<img width="100" height="100" src="https://img.icons8.com/3d-fluent/100/robot-6.png" alt="robot-6"/>';
     
     const content = document.createElement('div');
     content.className = 'message-content';

@@ -28,18 +28,18 @@
                 <span class="topic-label">Current Topic:</span>
                 <span class="topic-name" id="currentTopic">Photosynthesis</span>
             </div>
-
             <!-- Chat Container -->
             <div class="chat-container" id="chatContainer">
                 <!-- Welcome message -->
                 <div class="message ai-message">
-                    <div class="message-avatar"><i class="ri-robot-2-line"></i></div>
+                    <div class="message-avatar">
+                        <img width="100" height="100" src="https://img.icons8.com/3d-fluent/100/robot-6.png" alt="robot-6"/>
+                    </div>
                     <div class="message-content">
                         <p>Hello! I'm your AI tutor. Choose a learning mode below and start asking questions about photosynthesis!</p>
                     </div>
                 </div>
             </div>
-
             <!-- Learning Mode Buttons -->
             <div class="mode-buttons">
                 <button class="mode-btn" id="explainBtn" data-mode="explain">
@@ -52,13 +52,11 @@
                     <i class="ri-lightbulb-flash-line"></i> Simplify this
                 </button>
             </div>
-
             <!-- Current Mode Display -->
             <div class="current-mode">
                 <span>Mode: </span>
                 <span id="currentMode">None selected</span>
             </div>
-
             <!-- Input Area -->
             <div class="input-area">
                 <input 
@@ -67,13 +65,15 @@
                     placeholder="Type your message or click a mode button to start..."
                     autocomplete="off"
                 >
-                <button id="sendBtn" class="send-btn">Send</button>
+                <button id="sendBtn" class="send-btn">
+                    <i class="ri-send-plane-2-fill"></i>
+                </button>
             </div>
         </main>
 
         <!-- Footer -->
         <footer class="footer">
-            <p>Powered by Udayam AI Labs • LLM Tutor Demo</p>
+            <p>Powered by <a href="https://udayam.co.in/" target="_blank">Udayam AI Labs</a> • LLM Tutor Demo</p>
         </footer>
     </div>
 
