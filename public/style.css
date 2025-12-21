@@ -31,15 +31,31 @@
     scrollbar-width: thin; 
     scrollbar-color: rgba(0, 0, 0, 0.15) transparent; 
 }
+.brand-logo {
+    max-width: 180px;
+    height: auto;
+    display: block;
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.08));
+    cursor: pointer;
+    z-index: 10;
+}
 
+.brand-logo:hover {
+    transform: translateY(-3px) scale(1.02);
+    filter: drop-shadow(0 10px 20px rgba(110, 67, 206, 0.15));
+}
 body {
     background: var(--white);
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     justify-content: center;
-    align-items: center;
-    padding: 1rem;
-}  
+    align-items: flex-start;
+    padding: 2rem 1rem;
+}
 
 /* ===== SCROLLBAR ===== */
 
@@ -82,15 +98,27 @@ body::-webkit-scrollbar {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    height: 100%;
+    min-height: calc(100vh - 4rem);
 }
 
 /* Header */
 .header {
     background: transparent;
     color: var(--textColour);
-    padding: 0 20px;
+    padding: 2rem 20px;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
+    animation: fadeIn 1s ease-out;
+    position: relative;
+    min-height: 100px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
     .titleIcon{
         width: 100%;
@@ -155,14 +183,16 @@ body::-webkit-scrollbar {
     /* Chat Container */
     .chat-container {
         flex: 1;
+        min-height: 500px;
         overflow-y: auto;
-        padding: 16px;
+        padding: 24px;
         background: var(--white);
         border: var(--borderWidth);
-        border-radius: 6px;
+        border-radius: 12px;
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
     }
         /* Message Styles */
         .message {
@@ -357,8 +387,35 @@ body::-webkit-scrollbar {
     }
 
 /* Responsive Design */
-@media (max-width: 600px) {
-    .header h1 { font-size: 1.2rem; }
+@media (max-width: 768px) {
+    .header { padding: 1.5rem 15px 0.5rem; gap: 1rem; min-height: auto; }
+    .brand-logo { 
+        position: static; 
+        max-width: 180px; 
+        margin: 0 auto 1rem; 
+        transform: none;
+    }
+    .headerTitle { font-size: 1.8rem; }
+    .titleIcon img { width: 40px; height: 40px; }
+    
+    .info { 
+        flex-direction: column; 
+        align-items: flex-start; 
+        gap: 16px; 
+    }
+    .topic-display, .current-mode {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        width: 100%;
+    }
+    .topic-name, #currentMode {
+        font-size: 1.2rem;
+    }
+
+    .chat-container { padding: 16px; gap: 16px; }
+    .message-avatar { width: 32px; height: 32px; }
+    
     .mode-buttons { flex-direction: column; gap: 8px; }
     .mode-btn { min-width: 100%; }
     .message-content { max-width: 90%; }
