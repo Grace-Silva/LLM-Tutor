@@ -95,7 +95,7 @@ function getModeInstruction(mode) {
 }
 
 // Build the complete prompt for the LLM
-function buildPrompt(userMessage, mode, language = 'English', history = []) {
+function buildPrompt(userMessage, mode, language = 'English', history = [], topic = 'Photosynthesis') {
     const modeInstruction = getModeInstruction(mode);
     
     // Language instruction
@@ -112,17 +112,21 @@ function buildPrompt(userMessage, mode, language = 'English', history = []) {
         }).join("\n") + "\n";
     }
     
+    // Determine if we should use sample notes
+    const isPhotosynthesis = topic.toLowerCase().includes('photosynthesis');
+    const notesContext = isPhotosynthesis 
+        ? `STUDY NOTES:\n${SAMPLE_NOTES}\n\nIMPORTANT: Only use information from the study notes above. Do not add external information.`
+        : `TOPIC: ${topic}\n\nINSTRUCTION: Use your general knowledge to teach the student about ${topic}.`;
+
     // Structure: System context + Notes + Mode instruction + History + User message
-    const prompt = `You are a helpful AI tutor. Your role is to teach students based on the provided study notes.
+    const prompt = `You are a helpful AI tutor. Your role is to teach students about ${topic}.
 ${languageInstruction}
 
-STUDY NOTES:
-${SAMPLE_NOTES}
+${notesContext}
 
 INSTRUCTIONS:
 ${modeInstruction}
 
-IMPORTANT: Only use information from the study notes above. Do not add external information.
 ${historyText}
 Student's message: ${userMessage}`;
 
@@ -257,7 +261,7 @@ app.get('/api/health', (req, res) => {
 // Main chat endpoint
 app.post('/api/chat', async (req, res) => {
     try {
-        const { message, mode, language, history } = req.body;
+        const { message, mode, language, history, topic } = req.body;
         
         // Validate request
         if (!message || typeof message !== 'string') {
@@ -286,7 +290,7 @@ app.post('/api/chat', async (req, res) => {
         try {
             // Only attempt OpenAI if key is present
             if (process.env.OPENAI_API_KEY && !process.env.OPENAI_API_KEY.includes('your-api-key')) {
-                const fullPrompt = buildPrompt(message, mode, language, history);
+                const fullPrompt = buildPrompt(message, mode, language, history, topic);
                 aiReply = await callOpenAI(fullPrompt, mode);
             } else {
                 throw new Error('No valid API key configured');
