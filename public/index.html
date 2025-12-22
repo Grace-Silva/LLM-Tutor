@@ -26,10 +26,15 @@
         <main class="main-content">
         <!-- info -->   
         <div class="info">
-            <!-- Current Topic Display -->
-            <div class="topic-display">
-                <span class="topic-label">Current Topic:</span>
-                <span class="topic-name" id="currentTopic">Photosynthesis</span>
+            <!-- Dynamic Topic Input -->
+            <div class="topic-input-container">
+                <div class="input-group">
+                    <span class="topic-label">Topic:</span>
+                    <input type="text" id="topicInput" placeholder="Add any topic..." autocomplete="off">
+                    <button id="setTopicBtn" class="set-topic-btn">
+                        <i class="ri-check-line"></i>
+                    </button>
+                </div>
             </div>
             <!-- Language Selector -->
             <div class="language-selector">
